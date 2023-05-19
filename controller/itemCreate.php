@@ -8,13 +8,13 @@ $item = new Item($pdo);
 
 $item_name = $_POST['itemName'];
 $cate_id = $_POST['cate'];
-$img_src = "./kaiimgs/drink.jpeg";
+$img_file = $_FILES['imgSrc'];
 $price = $_POST['price'];
 // $stock = $_POST['stock'];
 $description = $_POST['description'];
 
 try {
-    $item->insertItem($item_name, $cate_id, $img_src, $price, $description);
+    $result = $item->insertItem($item_name, $cate_id, $img_file, $price, $description);
 } catch (Exception $e) {
     echo 'Caught exception: ',  $e->getMessage(), "\n";
 }

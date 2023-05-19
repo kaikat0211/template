@@ -76,16 +76,41 @@ class Item {
         }
     }
 
-    function insertItem($item_name, $cate_id, $img_url, $price, $item_description){
+    function insertItem($item_name, $cate_id, $img_file, $price, $item_description){
         $query = "INSERT INTO " . $this->table_name . " (item_id, item_name, cate_id, img_url, price, item_description) VALUES (:item_id, :item_name, :cate_id, :img_url, :price, :item_description)";
         $stmt = $this->conn->prepare($query);
         $stmt->bindValue(':item_id', $this->uuid(), PDO::PARAM_STR);
         $stmt->bindParam(':item_name', $item_name);
         $stmt->bindParam(':cate_id', $cate_id);
-        $stmt->bindParam(':img_url', $img_url);
         $stmt->bindValue(':price', $price, PDO::PARAM_INT);
         $stmt->bindParam(':item_description', $item_description);
-        $stmt->execute();
+
+        // handle the file upload
+        if($img_file["error"] == 0){
+            $target_dir = "./kaiimgs/";
+            $target_file = $target_dir . basename($img_file["name"]);
+            $imageFileType = strtolower(pathinfo($target_file, PATHINFO_EXTENSION));
+
+            // you can do some checks here, e.g. check if the file is an image, check if the file size is reasonable, etc.
+
+            if (move_uploaded_file($img_file["tmp_name"], $target_file)) {
+                // file was uploaded successfully, set img_url
+                $img_url = $target_file;
+                $stmt->bindParam(":img_url", $img_url);
+            } else {
+                // file upload failed
+                return false;
+            }
+        }else{
+            // No file was uploaded or there was an error uploading the file
+            return false;
+        }
+
+        if($stmt->execute()){
+            return true;
+        }
+
+        return false;
     }
 
     function getItemById($item_id){
